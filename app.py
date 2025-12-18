@@ -58,8 +58,6 @@ oauth.register(
     client_kwargs={"scope": "openid email profile"},
 )
 
-print("CLIENT ID:", os.getenv("GOOGLE_CLIENT_ID"))
-print("SECRET KEY SET:", bool(os.getenv("SECRET_KEY")))
 
 
 templates = Jinja2Templates(directory="./templates")
@@ -122,39 +120,32 @@ def create_post(
     description: str = Form(...),
     image: UploadFile = File(None)
 ):
-    if not request.session.get("user"):
-        return RedirectResponse("/login", status_code=303)
+    db = SessionLocal()
 
     image_filename = None
 
     if image:
+        os.makedirs("static/uploads", exist_ok=True)
         ext = image.filename.split(".")[-1]
         image_filename = f"{uuid.uuid4()}.{ext}"
-        image_path = f"static/uploads/{image_filename}"
 
-        with open(image_path, "wb") as f:
+        file_path = f"static/uploads/{image_filename}"
+
+        with open(file_path, "wb") as f:
             f.write(image.file.read())
-
-    db = SessionLocal()
-
-    now = datetime.utcnow() + timedelta(hours=5, minutes=30)
-    if len(description.strip()) < 5:
-        return RedirectResponse("/new-post", status_code=303)
-    if len(description) > 500:
-        return RedirectResponse("/new-post", status_code=303)
 
     new_post = Post(
         description=description,
         image=image_filename,
-        created_at=now,
-        expires_at=now + timedelta(days=7)
+        created_at=datetime.utcnow(),
+        expires_at=datetime.utcnow() + timedelta(days=7)
     )
 
     db.add(new_post)
     db.commit()
     db.close()
 
-    return RedirectResponse("/", status_code=303)
+    return RedirectResponse(url="/", status_code=303)
 
 #@app.get("/clear-posts")
 #def clear_posts():

@@ -9,7 +9,7 @@ class Post(Base):
     __tablename__ = "posts"
 
     id = Column(Integer, primary_key=True, index=True)
-    description = Column(String)
+    description = Column(String, nullable=false)
     image = Column(String, nullable=True)   # 👈 NEW
     created_at = Column(DateTime, default=datetime.utcnow)
     expires_at = Column(DateTime)

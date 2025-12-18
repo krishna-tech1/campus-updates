@@ -11,6 +11,8 @@ class Post(Base):
     id = Column(Integer, primary_key=True, index=True)
     description = Column(String, nullable=False)
     image = Column(String, nullable=True)   # 👈 NEW
+    author_name = Column(String, nullable=False)
+    author_email = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     expires_at = Column(DateTime)
 

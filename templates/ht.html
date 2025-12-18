@@ -31,6 +31,10 @@
 <h2>Latest Updates</h2>
 
 {% for post in posts %}
+<p style="font-weight:bold;">
+  {{ post.author_name }}
+</p>
+
   <div class="post-card">
       <p>{{ post.description }}</p>
     
@@ -43,13 +47,27 @@
 
 
       <div class="post-time">
-        Posted at {{ post.created_at.strftime('%d %b %Y, %I:%M %p') }}
-      </div>
+        {{ ist_time(post.created_at) }}</div>
   </div>
 {% endfor %}
 
 {% if posts|length == 0 %}
   <p>No updates yet. Be the first to post!</p>
+  <p><strong>{{ post.author_name }}</strong></p>
+<p>{{ post.description }}</p>
+
+{% if post.image %}
+  <img src="/static/uploads/{{ post.image }}" style="max-width:100%;">
+{% endif %}
+
+<small>{{ post.created_at }}</small>
+
+{% if request.session.get("user") and request.session.get("user")["email"] == post.author_email %}
+  <form method="post" action="/delete-post/{{ post.id }}">
+      <button type="submit">🗑 Delete</button>
+  </form>
+{% endif %}
+
 {% endif %}
 
 </body>

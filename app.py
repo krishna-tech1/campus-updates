@@ -81,7 +81,7 @@ def home(request: Request):
 
     return templates.TemplateResponse(
         "ht.html",
-        {"request": request, "posts": posts}
+        {"request": request, "posts": posts, "ist_time":ist_time}
     )
 
 
@@ -120,23 +120,25 @@ def create_post(
     description: str = Form(...),
     image: UploadFile = File(None)
 ):
+    user = request.session.get("user")
+    if not user:
+        return RedirectResponse("/login")
+
     db = SessionLocal()
 
     image_filename = None
-
     if image:
         os.makedirs("static/uploads", exist_ok=True)
         ext = image.filename.split(".")[-1]
         image_filename = f"{uuid.uuid4()}.{ext}"
-
-        file_path = f"static/uploads/{image_filename}"
-
-        with open(file_path, "wb") as f:
+        with open(f"static/uploads/{image_filename}", "wb") as f:
             f.write(image.file.read())
 
     new_post = Post(
         description=description,
         image=image_filename,
+        author_name=user["name"],
+        author_email=user["email"],
         created_at=datetime.utcnow(),
         expires_at=datetime.utcnow() + timedelta(days=7)
     )
@@ -145,7 +147,7 @@ def create_post(
     db.commit()
     db.close()
 
-    return RedirectResponse(url="/", status_code=303)
+    return RedirectResponse("/", status_code=303)
 
 #@app.get("/clear-posts")
 #def clear_posts():
@@ -180,3 +182,24 @@ async def auth_callback(request: Request):
 def logout(request: Request):
     request.session.clear()
     return RedirectResponse("/")
+
+
+@app.post("/delete-post/{post_id}")
+def delete_post(post_id: int, request: Request):
+    user = request.session.get("user")
+    if not user:
+        return RedirectResponse("/login")
+
+    db = SessionLocal()
+    post = db.query(Post).filter(Post.id == post_id).first()
+
+    if post and post.author_email == user["email"]:
+        db.delete(post)
+        db.commit()
+
+    db.close()
+    return RedirectResponse("/", status_code=303)
+
+def ist_time(dt):
+    return dt + timedelta(hours=5, minutes=30)
+

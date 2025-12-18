@@ -1,3 +1,5 @@
+from database import engine
+from models import Base
 from database import SessionLocal
 from models import Post
 from fastapi import FastAPI, Request
@@ -18,6 +20,9 @@ import os
 
 
 app = FastAPI()
+# Create DB tables on startup (VERY IMPORTANT)
+Base.metadata.create_all(bind=engine)
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 

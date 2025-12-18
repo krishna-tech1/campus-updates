@@ -1,74 +1,69 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="stylesheet" href="/static/style.css">
-
     <title>Campus Updates</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
 <div class="header">
-{% if request.session.get("user") %}
-  <p>
-    👋 {{ request.session.get("user")["name"] }}
-    | <a href="/logout">Logout</a>
-  </p>
-{% else %}
-  <a href="/login">Continue with Google</a>
-{% endif %}
+  <h1>Campus Updates</h1>
+
+  <div class="header-right">
+    {% if request.session.get("user") %}
+      👋 {{ request.session.get("user")["name"] }}
+      | <a href="/logout">Logout</a>
+    {% else %}
+      <a href="/login">Continue with Google</a>
+    {% endif %}
+  </div>
 </div>
 
-<h1>Campus Updates</h1>
+<div class="container">
 
-{% if request.session.get("user") %}
-  <a href="/new-post" class="post-btn">➕ Post an Update</a>
-{% else %}
-  <a href="/login">➕ Post an Update</a>
-{% endif %}
-
-<hr>
-
-<h2>Latest Updates</h2>
-
-{% for post in posts %}
-<p style="font-weight:bold;">
-  {{ post.author_name }}
-</p>
-
-  <div class="post-card">
-      <p>{{ post.description }}</p>
-    
-    
-  {% if post.image %}
-    <div class="post-image">
-      <img src="/static/uploads/{{ post.image }}" alt="Post image">
-    </div>
+  {% if request.session.get("user") %}
+    <a href="/new-post" class="post-btn">➕ Post an Update</a>
+  {% else %}
+    <a href="/login" class="post-btn">➕ Post an Update</a>
   {% endif %}
 
+  <h2>Latest Updates</h2>
+
+  {% if posts|length == 0 %}
+    <p class="empty">No updates yet. Be the first to post!</p>
+  {% endif %}
+
+  {% for post in posts %}
+    <div class="post-card">
+
+      <div class="post-author">
+        {{ post.author_name }}
+      </div>
+
+      <p class="post-text">
+        {{ post.description }}
+      </p>
+
+      {% if post.image %}
+        <div class="post-image">
+          <img src="/static/uploads/{{ post.image }}" alt="Post image">
+        </div>
+      {% endif %}
 
       <div class="post-time">
-        {{ ist_time(post.created_at) }}</div>
-  </div>
-{% endfor %}
+        {{ ist_time(post.created_at) }}
+      </div>
 
-{% if posts|length == 0 %}
-  <p>No updates yet. Be the first to post!</p>
-  <p><strong>{{ post.author_name }}</strong></p>
-<p>{{ post.description }}</p>
+      {% if request.session.get("user") and request.session.get("user")["email"] == post.author_email %}
+        <form method="post" action="/delete-post/{{ post.id }}">
+          <button type="submit" class="delete-btn">🗑 Delete</button>
+        </form>
+      {% endif %}
 
-{% if post.image %}
-  <img src="/static/uploads/{{ post.image }}" style="max-width:100%;">
-{% endif %}
+    </div>
+  {% endfor %}
 
-<small>{{ post.created_at }}</small>
-
-{% if request.session.get("user") and request.session.get("user")["email"] == post.author_email %}
-  <form method="post" action="/delete-post/{{ post.id }}">
-      <button type="submit">🗑 Delete</button>
-  </form>
-{% endif %}
-
-{% endif %}
+</div>
 
 </body>
 </html>

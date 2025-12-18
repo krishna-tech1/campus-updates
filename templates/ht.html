@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="/static/style.css">
+
+    <title>Campus Updates</title>
+</head>
+<body>
+
+<div class="header">
+{% if request.session.get("user") %}
+  <p>
+    👋 {{ request.session.get("user")["name"] }}
+    | <a href="/logout">Logout</a>
+  </p>
+{% else %}
+  <a href="/login">Continue with Google</a>
+{% endif %}
+</div>
+
+<h1>Campus Updates</h1>
+
+{% if request.session.get("user") %}
+  <a href="/new-post" class="post-btn">➕ Post an Update</a>
+{% else %}
+  <a href="/login">➕ Post an Update</a>
+{% endif %}
+
+<hr>
+
+<h2>Latest Updates</h2>
+
+{% for post in posts %}
+  <div class="post-card">
+      <p>{{ post.description }}</p>
+    
+    
+  {% if post.image %}
+    <div class="post-image">
+      <img src="/static/uploads/{{ post.image }}" alt="Post image">
+    </div>
+  {% endif %}
+
+
+      <div class="post-time">
+        Posted at {{ post.created_at.strftime('%d %b %Y, %I:%M %p') }}
+      </div>
+  </div>
+{% endfor %}
+
+{% if posts|length == 0 %}
+  <p>No updates yet. Be the first to post!</p>
+{% endif %}
+
+</body>
+</html>

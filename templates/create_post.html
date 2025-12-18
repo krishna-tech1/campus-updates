@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Post</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="header">
+  <p>
+    ✍️ Create a Campus Update
+    | <a href="/">Home</a>
+    | <a href="/logout">Logout</a>
+  </p>
+</div>
+
+<div class="post-card">
+  <form action="/create-post" method="post" enctype="multipart/form-data">
+      <textarea name="description"
+                rows="5"
+                placeholder="What’s happening in college?"
+                required
+                style="width:100%; padding:10px; font-size:14px;"></textarea>
+       <input type="file" name="image" accept="image/*" onchange="previewImage(event)">
+        <img id="preview"
+     style="display:none; margin-top:10px; max-width:100%; border-radius:6px;">
+
+      <br><br>
+
+      <button type="submit" class="post-btn">Post Update</button>
+  </form>
+</div>
+<script>
+function previewImage(event) {
+    const img = document.getElementById("preview");
+    img.src = URL.createObjectURL(event.target.files[0]);
+    img.style.display = "block";
+}
+</script>
+
+</body>
+</html>

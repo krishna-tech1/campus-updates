@@ -109,6 +109,31 @@ body {
   margin-top: 40px;
 }
 
+/* ===== Button interactions ===== */
+.post-btn,
+.delete-btn {
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.post-btn:hover {
+  background: #1e40af;
+  transform: translateY(-1px);
+}
+
+.post-btn:active {
+  transform: scale(0.97);
+}
+
+.delete-btn:hover {
+  background: #b91c1c;
+}
+
+
+button:focus,
+textarea:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
 
 
 /* ===== Create Post ===== */

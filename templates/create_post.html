@@ -28,7 +28,7 @@
 
       <img id="preview">
 
-      <button type="submit" class="post-btn">Post Update</button>
+      <button type="submit" class="post-btn" id="sumbitBtn">Post Update</button>
 
     </form>
   </div>
@@ -41,6 +41,12 @@ function previewImage(event) {
   img.src = URL.createObjectURL(event.target.files[0]);
   img.style.display = "block";
 }
+document.querySelector("form").addEventListener("submit", function () {
+  const btn = document.getElementById("submitBtn");
+  btn.innerText = "Posting...";
+  btn.disabled = true;
+  btn.style.opacity = "0.7";
+});
 </script>
 
 </body>

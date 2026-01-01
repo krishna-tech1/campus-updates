@@ -31,6 +31,10 @@ body {
   font-weight: 500;
 }
 
+.header-right {
+  font-size: 14px;
+}
+
 /* ===== Layout ===== */
 .container {
   max-width: 800px;
@@ -48,25 +52,45 @@ body {
   border-radius: 6px;
   text-decoration: none;
   font-size: 14px;
+  transition: background 0.2s ease, transform 0.1s ease;
 }
 
 .post-btn:hover {
   background: #1e40af;
+  transform: translateY(-1px);
 }
 
+.post-btn:active {
+  transform: scale(0.97);
+}
+
+/* Delete button (clean version) */
 .delete-btn {
   margin-top: 8px;
-  background: #dc2626;
-  color: white;
-  border: none;
+  background: transparent;
+  color: #dc2626;
+  border: 1px solid #dc2626;
   padding: 6px 10px;
   border-radius: 5px;
   cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.delete-btn:hover {
+  background: #dc2626;
+  color: white;
+}
+
+/* ===== Divider ===== */
+.divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 16px 0;
 }
 
 /* ===== Post Card ===== */
 .post-card {
-  ackground: #ffffff;
+  background: #ffffff; /* FIXED TYPO */
   padding: 16px;
   margin: 18px 0;
   border-radius: 12px;
@@ -87,7 +111,7 @@ body {
 
 .post-image img {
   width: 100%;
-  border-radius: 8px;
+  border-radius: 10px;
   margin-top: 10px;
 }
 
@@ -97,46 +121,14 @@ body {
   margin-top: 6px;
 }
 
-.header-right {
-  font-size: 14px;
-}
-
-
-  .empty {
+.empty {
   text-align: center;
   color: #666;
   font-style: italic;
   margin-top: 40px;
 }
 
-/* ===== Button interactions ===== */
-.post-btn,
-.delete-btn {
-  transition: background 0.2s ease, transform 0.1s ease;
-}
-
-.post-btn:hover {
-  background: #1e40af;
-  transform: translateY(-1px);
-}
-
-.post-btn:active {
-  transform: scale(0.97);
-}
-
-.delete-btn:hover {
-  background: #b91c1c;
-}
-
-
-button:focus,
-textarea:focus {
-  outline: 2px solid #2563eb;
-  outline-offset: 2px;
-}
-
-
-/* ===== Create Post ===== */
+/* ===== Forms ===== */
 textarea {
   width: 100%;
   min-height: 120px;
@@ -157,9 +149,35 @@ input[type="file"] {
   border-radius: 8px;
 }
 
+button:focus,
+textarea:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
 /* ===== Mobile ===== */
 @media (max-width: 600px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
   .header h1 {
     font-size: 18px;
+  }
+
+  .header-right {
+    font-size: 13px;
+  }
+
+  .post-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .post-card {
+    margin: 12px 0;
+    padding: 14px;
   }
 }

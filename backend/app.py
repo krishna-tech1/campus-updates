@@ -74,12 +74,16 @@ def cleanup_expired_posts(db):
         db.delete(post)
     db.commit()
 
+@app.get("/")
+async def root():
+    return {"status": "online", "message": "Campus Updates API is running. Use /api prefix for routes."}
+
 # --- Auth Routes ---
 @app.get("/api/auth/login")
 async def login(request: Request):
     redirect_uri = request.url_for("auth_callback")
     # Force HTTPS in production if needed
-    if "request.url.scheme" == "https":
+    if request.url.scheme == "https":
         redirect_uri = str(redirect_uri).replace("http://", "https://")
     return await oauth.google.authorize_redirect(request, redirect_uri)
 

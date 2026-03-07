@@ -23,7 +23,13 @@ app = FastAPI()
 # Create DB tables on startup (VERY IMPORTANT)
 Base.metadata.create_all(bind=engine)
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Path setup for frontend assets
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FRONTEND_DIR = os.path.join(os.path.dirname(BASE_DIR), "frontend")
+STATIC_DIR = os.path.join(FRONTEND_DIR, "static")
+TEMPLATES_DIR = os.path.join(FRONTEND_DIR, "templates")
+
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
 
@@ -34,7 +40,7 @@ def cleanup_expired_posts(db):
 
     for post in expired_posts:
         if post.image:
-            image_path = f"static/uploads/{post.image}"
+            image_path = os.path.join(STATIC_DIR, "uploads", post.image)
             if os.path.exists(image_path):
                 os.remove(image_path)
 
@@ -60,7 +66,7 @@ oauth.register(
 
 
 
-templates = Jinja2Templates(directory="./templates")
+templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -114,6 +120,27 @@ def new_post(request: Request):
     )
 
 
+@app.get("/dashboard", response_class=HTMLResponse)
+def dashboard(request: Request):
+    user = request.session.get("user")
+    if not user:
+        return RedirectResponse("/login")
+
+    db = SessionLocal()
+    posts = (
+        db.query(Post)
+        .filter(Post.author_email == user["email"])
+        .order_by(Post.id.desc())
+        .all()
+    )
+    db.close()
+
+    return templates.TemplateResponse(
+        "dashboard.html",
+        {"request": request, "posts": posts, "ist_time": ist_time}
+    )
+
+
 @app.post("/create-post")
 def create_post(
     request: Request,
@@ -128,10 +155,12 @@ def create_post(
 
     image_filename = None
     if image:
-        os.makedirs("static/uploads", exist_ok=True)
+        upload_dir = os.path.join(STATIC_DIR, "uploads")
+        os.makedirs(upload_dir, exist_ok=True)
         ext = image.filename.split(".")[-1]
         image_filename = f"{uuid.uuid4()}.{ext}"
-        with open(f"static/uploads/{image_filename}", "wb") as f:
+        image_path = os.path.join(upload_dir, image_filename)
+        with open(image_path, "wb") as f:
             f.write(image.file.read())
 
     new_post = Post(

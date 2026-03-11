@@ -1,6 +1,6 @@
 import os
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
 from fastapi import FastAPI, Request, Form, UploadFile, File, HTTPException, Depends
@@ -64,7 +64,7 @@ def get_db():
 
 # Logic to clean expired posts
 def cleanup_expired_posts(db):
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     expired_posts = db.query(Post).filter(Post.expires_at <= now).all()
     for post in expired_posts:
         if post.image:
@@ -120,7 +120,7 @@ async def logout(request: Request):
 @app.get("/api/posts")
 async def get_posts(db=Depends(get_db)):
     cleanup_expired_posts(db)
-    posts = db.query(Post).filter(Post.expires_at > datetime.utcnow()).order_by(Post.id.desc()).all()
+    posts = db.query(Post).filter(Post.expires_at > datetime.now(timezone.utc)).order_by(Post.id.desc()).all()
     return posts
 
 @app.post("/api/posts")
@@ -147,8 +147,8 @@ async def create_post(
         image=image_filename,
         author_name=user["name"],
         author_email=user["email"],
-        created_at=datetime.utcnow(),
-        expires_at=datetime.utcnow() + timedelta(days=7)
+        created_at=datetime.now(timezone.utc),
+        expires_at=datetime.now(timezone.utc) + timedelta(days=7)
     )
 
     db.add(new_post)

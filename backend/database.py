@@ -25,4 +25,5 @@ else:
 
 SessionLocal = sessionmaker(bind=engine)
 
+# Standard declarative base for SQLAlchemy
 Base = declarative_base()

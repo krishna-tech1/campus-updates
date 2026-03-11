@@ -90,10 +90,18 @@ async def root():
 # --- Auth Routes ---
 @app.get("/api/auth/login")
 async def login(request: Request):
+    # Determine the correct scheme for production (Render)
+    proto = request.headers.get("x-forwarded-proto", "http")
     redirect_uri = request.url_for("auth_callback")
-    # Force HTTPS in production if needed
-    if request.url.scheme == "https":
+    
+    # Force the scheme to match the external protocol (important for Render/Vercel)
+    if proto == "https":
         redirect_uri = str(redirect_uri).replace("http://", "https://")
+    else:
+        # Fallback for manual check if header is missing
+        if request.url.scheme == "https":
+            redirect_uri = str(redirect_uri).replace("http://", "https://")
+            
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
 @app.get("/api/auth/callback")
@@ -109,9 +117,12 @@ async def auth_callback(request: Request):
             "email": user.get("email"),
             "picture": user.get("picture")
         }
-        return RedirectResponse(url=f"{FRONTEND_URL}/auth-success")
+        # Use 302 (Found) instead of 307 for cleaner browser redirection
+        return RedirectResponse(url=f"{FRONTEND_URL}/auth-success", status_code=302)
     except Exception as e:
-        return RedirectResponse(url=f"{FRONTEND_URL}/login?error={str(e)}")
+        print(f"Auth error: {str(e)}")
+        # Redirect to home with error since /login doesn't exist
+        return RedirectResponse(url=f"{FRONTEND_URL}/?error=auth_failed", status_code=302)
 
 @app.get("/api/auth/me")
 async def get_me(request: Request):

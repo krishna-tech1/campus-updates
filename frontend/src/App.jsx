@@ -12,7 +12,7 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Header />
-        <main className="pt-32 sm:pt-44 min-h-screen bg-slate-50 dark:bg-slate-950 px-4 sm:px-6">
+        <main className="pt-40 sm:pt-52 min-h-screen bg-[#f8fafc] px-4 sm:px-6">
           <div className="max-w-3xl mx-auto pb-12">
             <Routes>
               <Route path="/" element={<Feed />} />

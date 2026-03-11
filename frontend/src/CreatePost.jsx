@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from './api';
 import { useAuth } from './AuthContext';
-import { Image, X, Send, ArrowLeft, Loader2, Sparkles } from 'lucide-react';
+import { Image as ImageIcon, X, Send, ArrowLeft, Loader2, Sparkles, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function CreatePost() {
@@ -45,70 +45,67 @@ export default function CreatePost() {
   if (!user) return null;
 
   return (
-    <div className="font-inter pt-4 sm:pt-8">
-      <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <button 
-                onClick={() => navigate('/')} 
-                className="p-3 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-blue-600 hover:border-blue-200 transition-all active:scale-95"
-            >
-                <ArrowLeft size={20} />
-            </button>
-            <div>
-                <h1 className="font-black text-2xl sm:text-3xl text-slate-900 dark:text-white tracking-tight">Post Update</h1>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Avichi College Feed</p>
-            </div>
-          </div>
+    <div className="max-w-2xl mx-auto px-4 py-12">
+      <div className="flex items-center gap-4 mb-10">
+        <button 
+          onClick={() => navigate('/')} 
+          className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-brand-blue hover:border-brand-blue transition-all active:scale-95 shadow-sm"
+        >
+          <ArrowLeft size={20} />
+        </button>
+        <div>
+          <h1 className="font-black text-2xl text-slate-900 tracking-tight">Create Update</h1>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Campus Community Feed</p>
+        </div>
       </div>
 
       <motion.div 
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-slate-900 rounded-[32px] p-6 sm:p-10 shadow-2xl shadow-blue-900/5 border border-slate-100 dark:border-slate-800"
+        className="premium-card p-6 sm:p-10 bg-white"
       >
-        <div className="flex gap-4 mb-8">
-            <div className="relative">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl elegant-gradient flex items-center justify-center text-white font-black text-xl shadow-lg">
-                {user.name.charAt(0)}
-              </div>
-              <div className="absolute -top-1 -right-1 bg-accent p-1 rounded-lg shadow-sm border-2 border-white dark:border-slate-900 text-blue-900">
-                <Sparkles size={12} fill="currentColor" />
-              </div>
+        <div className="flex gap-4 mb-10">
+          {user.picture ? (
+            <img src={user.picture} alt={user.name} className="w-12 h-12 rounded-xl shadow-sm border border-slate-100" />
+          ) : (
+            <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-brand-blue border border-slate-200">
+              <User size={22} />
             </div>
-            <div className="flex-1">
-              <h2 className="font-black text-lg sm:text-xl text-slate-900 dark:text-white leading-tight">{user.name}</h2>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="inline-block w-2 h-2 rounded-full bg-green-500"></span>
-                <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-bold uppercase tracking-wider">Broadcasting Live</p>
-              </div>
+          )}
+          <div>
+            <h2 className="font-bold text-slate-900 leading-tight">{user.name}</h2>
+            <div className="flex items-center gap-1.5 mt-0.5">
+               <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+               <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Broadcasting to Avichi Feed</span>
             </div>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-10">
           <textarea
-            className="w-full min-h-[150px] sm:min-h-[200px] text-xl sm:text-2xl bg-transparent border-none focus:ring-0 placeholder:text-slate-300 dark:placeholder:text-slate-700 font-medium resize-none text-slate-800 dark:text-slate-100 p-0"
-            placeholder="What's happening in college today?"
+            className="w-full min-h-[150px] text-lg sm:text-xl bg-transparent border-none focus:ring-0 placeholder:text-slate-300 font-medium resize-none text-slate-800 p-0"
+            placeholder="What's the official update for today?"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             required
           />
 
           {preview && (
-            <div className="relative rounded-[24px] overflow-hidden border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-2">
-              <img src={preview} className="w-full max-h-[450px] object-contain rounded-[20px]" alt="Preview" />
+            <div className="relative rounded-2xl overflow-hidden border border-slate-100 shadow-inner group">
+              <img src={preview} className="w-full max-h-[400px] object-contain bg-slate-50" alt="Preview" />
               <button 
                 type="button" 
                 onClick={() => { setFile(null); setPreview(null); }}
-                className="absolute top-4 right-4 p-2 bg-black/60 hover:bg-red-600 text-white rounded-full backdrop-blur-md transition-all shadow-xl"
+                className="absolute top-4 right-4 p-2 bg-slate-900/80 hover:bg-red-500 text-white rounded-lg backdrop-blur-md transition-all shadow-lg"
               >
                 <X size={18} />
               </button>
             </div>
           )}
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-6 pt-8 border-t border-slate-50 dark:border-slate-800">
-            <label className="flex items-center justify-center gap-3 cursor-pointer text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 px-6 py-3 rounded-2xl transition-all font-bold text-sm border-2 border-slate-100 dark:border-slate-800 group">
-              <Image size={20} className="text-blue-600 group-hover:scale-110 transition-transform" />
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-6 pt-8 border-t border-slate-50">
+            <label className="flex items-center justify-center gap-3 cursor-pointer text-slate-500 hover:text-brand-blue hover:bg-slate-50 px-6 py-3 rounded-2xl transition-all font-bold text-sm border border-slate-200 group">
+              <ImageIcon size={20} className="text-brand-gold group-hover:scale-110" />
               <span>Attach Media</span>
               <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
             </label>
@@ -116,10 +113,10 @@ export default function CreatePost() {
             <button
               type="submit"
               disabled={loading || !description.trim()}
-              className={`flex items-center justify-center gap-3 px-10 py-4 rounded-2xl font-black shadow-2xl transition-all active:scale-95 ${
+              className={`flex items-center justify-center gap-3 px-10 py-4 rounded-2xl font-black shadow-xl transition-all active:scale-95 ${
                 loading || !description.trim() 
-                  ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed shadow-none' 
-                  : 'elegant-gradient text-white shadow-blue-500/25 hover:shadow-blue-500/40 hover:-translate-y-1'
+                  ? 'bg-slate-100 text-slate-300 cursor-not-allowed shadow-none' 
+                  : 'brand-gradient text-white shadow-blue-500/20 hover:shadow-blue-500/30 hover:-translate-y-1'
               }`}
             >
               {loading ? (
@@ -127,7 +124,7 @@ export default function CreatePost() {
               ) : (
                 <Send size={20} />
               )}
-              <span>Share to Feed</span>
+              <span>Broadcast Update</span>
             </button>
           </div>
         </form>

@@ -1,16 +1,21 @@
 @import "tailwindcss";
 
 @theme {
-  --font-inter: "Inter", system-ui, -apple-system, sans-serif;
+  --font-inter: "Outfit", "Inter", system-ui, -apple-system, sans-serif;
+  --color-primary: #1e3a8a; /* Deep Blue from Logo */
+  --color-secondary: #7f1d1d; /* Maroon from Logo */
+  --color-accent: #fbbf24; /* Golden Yellow from Logo */
 }
 
 :root {
   font-family: var(--font-inter);
-  line-height: 1.5;
+  line-height: 1.6;
   font-weight: 400;
   color-scheme: light dark;
-  background-color: #f8fafc;
+  background-color: #fcfdfe; /* Slightly warmer than pure white */
   color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
@@ -18,15 +23,53 @@ body {
   display: flex;
   min-width: 320px;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 #root {
   width: 100%;
 }
 
+/* Custom Premium Utilities */
+.premium-shadow {
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04), 
+              0 20px 25px -5px rgba(0, 0, 0, 0.03);
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.dark .glass {
+  background: rgba(15, 23, 42, 0.7);
+}
+
+.elegant-gradient {
+  background: linear-gradient(135deg, var(--color-primary) 0%, #312e81 100%);
+}
+
+.text-gradient {
+  background: linear-gradient(to right, var(--color-primary), #4338ca);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
-    background-color: #0f172a;
+    background-color: #020617;
     color: #f8fafc;
   }
+}
+
+/* Smooth Transitions */
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+}
+
+/* Input Styles */
+input, textarea {
+  outline: none !important;
 }

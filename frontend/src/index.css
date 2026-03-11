@@ -11,11 +11,12 @@
 
 /* Strictly Light Theme Premium UI */
 :root {
+  color-scheme: light !important;
   font-family: var(--font-inter);
   line-height: 1.6;
   font-weight: 400;
-  background-color: var(--color-soft-bg);
-  color: #1e293b;
+  background-color: #f8fafc !important;
+  color: #1e293b !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -26,7 +27,8 @@ body {
   min-width: 320px;
   min-height: 100vh;
   overflow-x: hidden;
-  background-color: var(--color-soft-bg);
+  background-color: #f8fafc !important;
+  color: #1e293b !important;
 }
 
 #root {

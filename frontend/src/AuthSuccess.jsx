@@ -20,7 +20,7 @@ export default function AuthSuccess() {
   }, [checkAuth, navigate]);
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white dark:bg-slate-950 font-inter">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#f8fafc] font-inter">
       <div className="text-center px-4">
         <motion.div 
           initial={{ opacity: 0, scale: 0.5 }}

@@ -27,16 +27,18 @@ FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173") # Vite default
 
 # Middleware
 app.add_middleware(
-    SessionMiddleware,
-    secret_key=SECRET_KEY
-)
-
-app.add_middleware(
     CORSMiddleware,
     allow_origins=[FRONTEND_URL],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=SECRET_KEY,
+    same_site="none",
+    https_only=True
 )
 
 # Static files for uploads
@@ -64,15 +66,22 @@ def get_db():
 
 # Logic to clean expired posts
 def cleanup_expired_posts(db):
-    now = datetime.now(timezone.utc)
-    expired_posts = db.query(Post).filter(Post.expires_at <= now).all()
-    for post in expired_posts:
-        if post.image:
-            image_path = os.path.join(UPLOAD_DIR, post.image)
-            if os.path.exists(image_path):
-                os.remove(image_path)
-        db.delete(post)
-    db.commit()
+    try:
+        now = datetime.now(timezone.utc)
+        expired_posts = db.query(Post).filter(Post.expires_at <= now).all()
+        for post in expired_posts:
+            if post.image:
+                image_path = os.path.join(UPLOAD_DIR, post.image)
+                if os.path.exists(image_path):
+                    try:
+                        os.remove(image_path)
+                    except:
+                        pass
+            db.delete(post)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print(f"Cleanup error: {e}")
 
 @app.get("/")
 async def root():

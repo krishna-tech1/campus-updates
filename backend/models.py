@@ -10,7 +10,7 @@ class Post(Base):
     image = Column(String, nullable=True)
     author_name = Column(String, nullable=False)
     author_email = Column(String, nullable=False)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-    expires_at = Column(DateTime)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    expires_at = Column(DateTime(timezone=True))
 
 

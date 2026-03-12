@@ -60,6 +60,12 @@ export default function Header() {
                   </div>
                 )}
 
+                {user.role === 'admin' && (
+                  <span className="hidden sm:inline bg-brand-maroon text-white text-[9px] px-2.5 py-1 rounded-full font-black tracking-widest shadow-sm">
+                    ADMIN
+                  </span>
+                )}
+
                 <button 
                   onClick={logout}
                   className="p-2 text-slate-400 hover:text-brand-maroon hover:bg-red-50 rounded-lg transition-all"

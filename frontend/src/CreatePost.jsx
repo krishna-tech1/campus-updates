@@ -72,11 +72,24 @@ export default function CreatePost() {
               <User size={22} />
             </div>
           )}
+          
+          {user.role === 'admin' && (
+            <div className="flex items-center">
+              <span className="bg-brand-maroon text-white text-[9px] px-2.5 py-1 rounded-full font-black tracking-widest shadow-sm">
+                ADMIN
+              </span>
+            </div>
+          )}
           <div>
             <h2 className="font-bold text-slate-900 leading-tight">{user.name}</h2>
             <div className="flex items-center gap-1.5 mt-0.5">
                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-               <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Broadcasting to Avichi Feed</span>
+               <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                 {user.role === 'admin' ? 'Broadcasting as Admin' : 'Broadcasting to Avichi Feed'}
+               </span>
+               {user.role === 'admin' && (
+                 <span className="bg-brand-maroon/10 text-brand-maroon text-[9px] px-2 py-0.5 rounded-full font-black ml-1">ADMIN</span>
+               )}
             </div>
           </div>
         </div>

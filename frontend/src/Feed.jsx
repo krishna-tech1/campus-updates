@@ -78,7 +78,7 @@ export default function Feed() {
         ) : (
           <div className="premium-card p-6 text-center bg-slate-50 border-dashed">
             <p className="text-slate-500 text-sm font-medium mb-3">Login to participate in the conversation</p>
-            <button onClick={login} className="text-brand-blue font-bold text-sm hover:underline">Sign in with Google</button>
+            <Link to="/auth" className="text-brand-blue font-bold text-sm hover:underline">Get Started with an Account</Link>
           </div>
         )}
       </div>
@@ -158,7 +158,7 @@ export default function Feed() {
                       <button className="p-2 text-slate-300 hover:text-slate-500 transition-colors">
                         <Share2 size={18} />
                       </button>
-                      {user && user.email === post.author_email && (
+                      {user && (user.email === post.author_email || user.role === 'admin') && (
                         <button 
                           onClick={() => handleDelete(post.id)}
                           className="p-2 text-slate-300 hover:text-red-500 transition-colors"

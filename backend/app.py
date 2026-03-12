@@ -1,5 +1,6 @@
 import os
 import uuid
+import random
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
@@ -7,21 +8,44 @@ from fastapi import FastAPI, Request, Form, UploadFile, File, HTTPException, Dep
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
-from starlette.middleware.base import BaseHTTPMiddleware
-from authlib.integrations.starlette_client import OAuth
+from starlette.middleware.proxy_headers import ProxyHeadersMiddleware
 from fastapi.staticfiles import StaticFiles
+from dotenv import load_dotenv
+
 from database import engine, SessionLocal
 from models import Base, Post, User
 from email_service import send_otp_email
-import random
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 load_dotenv()
 
 # Initialize Database
 Base.metadata.create_all(bind=engine)
+
+# Create Admin User if doesn't exist
+def create_admin_user():
+    db = SessionLocal()
+    try:
+        admin_email = os.getenv("ADMIN_EMAIL", "admin@campus.com")
+        admin_password = os.getenv("ADMIN_PASSWORD", "admin123")
+        
+        admin = db.query(User).filter(User.email == admin_email).first()
+        if not admin:
+            admin = User(
+                name="System Admin",
+                email=admin_email,
+                hashed_password=pwd_context.hash(admin_password),
+                is_verified=True,
+                role="admin"
+            )
+            db.add(admin)
+            db.commit()
+            print(f"Admin user created: {admin_email}")
+    finally:
+        db.close()
+
+create_admin_user()
 
 app = FastAPI(title="Campus Updates API")
 
@@ -29,20 +53,22 @@ app = FastAPI(title="Campus Updates API")
 SECRET_KEY = os.getenv("SECRET_KEY", "your-super-secret-key")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173") # Vite default port
 
-# Sanitize FRONTEND_URL
-if FRONTEND_URL.endswith('/'):
-    FRONTEND_URL = FRONTEND_URL[:-1]
+# Sanitize and setup origins
+allowed_origins = [
+    os.getenv("FRONTEND_URL", "https://campus-updates.vercel.app"),
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:5173"
+]
 
-# Middleware Order: Proxy -> CORS -> Session
-# ProxyHeaders handling for Render/Cloudflare
-from starlette.middleware import Middleware
-from starlette.middleware.proxy_headers import ProxyHeadersMiddleware
+# Ensure no trailing slashes in origins
+allowed_origins = [origin.rstrip("/") for origin in allowed_origins if origin]
 
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -53,7 +79,7 @@ app.add_middleware(
     secret_key=SECRET_KEY,
     same_site="none",
     https_only=True,
-    max_age=3600  # 1 hour
+    max_age=3600
 )
 
 # Static files for uploads
@@ -176,6 +202,7 @@ async def login(
         "id": user.id,
         "name": user.name,
         "email": user.email,
+        "role": user.role,
         "picture": None # No picture for regular login yet
     }
     return {"message": "Login successful", "user": request.session["user"]}
@@ -251,7 +278,7 @@ async def delete_post(post_id: int, request: Request, db=Depends(get_db)):
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
         
-    if post.author_email != user["email"]:
+    if post.author_email != user["email"] and user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Not authorized to delete this post")
 
     if post.image:

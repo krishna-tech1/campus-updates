@@ -14,6 +14,7 @@ python-multipart
 # Authentication & sessions
 authlib
 httpx
+requests
 itsdangerous
 
 # Password hashing

@@ -8,7 +8,6 @@ from fastapi import FastAPI, Request, Form, UploadFile, File, HTTPException, Dep
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
-from starlette.middleware.proxy_headers import ProxyHeadersMiddleware
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 
@@ -63,8 +62,6 @@ allowed_origins = [
 
 # Ensure no trailing slashes in origins
 allowed_origins = [origin.rstrip("/") for origin in allowed_origins if origin]
-
-app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
 app.add_middleware(
     CORSMiddleware,

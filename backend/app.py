@@ -7,6 +7,7 @@ from fastapi import FastAPI, Request, Form, UploadFile, File, HTTPException, Dep
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from authlib.integrations.starlette_client import OAuth
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
@@ -23,9 +24,17 @@ app = FastAPI(title="Campus Updates API")
 
 # Configuration
 SECRET_KEY = os.getenv("SECRET_KEY", "your-super-secret-key")
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173") # Vite default port
+# Sanitize FRONTEND_URL
+if FRONTEND_URL.endswith('/'):
+    FRONTEND_URL = FRONTEND_URL[:-1]
 
-# Middleware
+# Middleware Order: Proxy -> CORS -> Session
+# ProxyHeaders handling for Render/Cloudflare
+from starlette.middleware import Middleware
+from starlette.middleware.proxy_headers import ProxyHeadersMiddleware
+
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[FRONTEND_URL],
@@ -38,7 +47,8 @@ app.add_middleware(
     SessionMiddleware,
     secret_key=SECRET_KEY,
     same_site="none",
-    https_only=True
+    https_only=True,
+    max_age=3600  # 1 hour
 )
 
 # Static files for uploads

@@ -4,8 +4,7 @@ import { AuthProvider } from './AuthContext';
 import Header from './Header';
 import Feed from './Feed';
 import CreatePost from './CreatePost';
-import AuthSuccess from './AuthSuccess';
-import './App.css';
+import Auth from './Auth';
 
 function App() {
   return (
@@ -16,8 +15,8 @@ function App() {
           <div className="max-w-3xl mx-auto pb-12">
             <Routes>
               <Route path="/" element={<Feed />} />
+              <Route path="/auth" element={<Auth />} />
               <Route path="/create" element={<CreatePost />} />
-              <Route path="/auth-success" element={<AuthSuccess />} />
             </Routes>
           </div>
         </main>

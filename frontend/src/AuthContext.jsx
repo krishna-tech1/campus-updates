@@ -22,8 +22,30 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
-  const login = () => {
-    window.location.href = `${api.defaults.baseURL}/api/auth/login`;
+  const login = async (email, password) => {
+    const formData = new FormData();
+    formData.append('email', email);
+    formData.append('password', password);
+    const res = await api.post('/api/auth/login', formData);
+    setUser(res.data.user);
+    return res.data;
+  };
+
+  const register = async (name, email, password) => {
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('email', email);
+    formData.append('password', password);
+    const res = await api.post('/api/auth/register', formData);
+    return res.data;
+  };
+
+  const verifyOTP = async (email, otp) => {
+    const formData = new FormData();
+    formData.append('email', email);
+    formData.append('otp', otp);
+    const res = await api.post('/api/auth/verify', formData);
+    return res.data;
   };
 
   const logout = async () => {
@@ -36,7 +58,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, checkAuth }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, register, verifyOTP, checkAuth }}>
       {children}
     </AuthContext.Provider>
   );

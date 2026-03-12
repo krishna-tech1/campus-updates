@@ -70,12 +70,12 @@ export default function Header() {
               </div>
             </div>
           ) : (
-            <button 
-              onClick={login}
+            <Link 
+              to="/auth"
               className="bg-slate-900 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-brand-blue transition-all active:scale-95 shadow-sm"
             >
               Sign In
-            </button>
+            </Link>
           )}
         </nav>
       </div>

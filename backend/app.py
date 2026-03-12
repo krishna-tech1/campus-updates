@@ -10,10 +10,13 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from authlib.integrations.starlette_client import OAuth
 from fastapi.staticfiles import StaticFiles
-from dotenv import load_dotenv
-
 from database import engine, SessionLocal
-from models import Base, Post
+from models import Base, Post, User
+from email_service import send_otp_email
+import random
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 load_dotenv()
 
@@ -24,6 +27,8 @@ app = FastAPI(title="Campus Updates API")
 
 # Configuration
 SECRET_KEY = os.getenv("SECRET_KEY", "your-super-secret-key")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173") # Vite default port
+
 # Sanitize FRONTEND_URL
 if FRONTEND_URL.endswith('/'):
     FRONTEND_URL = FRONTEND_URL[:-1]
@@ -56,15 +61,12 @@ UPLOAD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
-# OAuth Setup
-oauth = OAuth()
-oauth.register(
-    name="google",
-    client_id=os.getenv("GOOGLE_CLIENT_ID"),
-    client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
-    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
-    client_kwargs={"scope": "openid email profile"},
-)
+# Password Utilities
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
 
 # Dependency to get DB session
 def get_db():
@@ -98,41 +100,85 @@ async def root():
     return {"status": "online", "message": "Campus Updates API is running. Use /api prefix for routes."}
 
 # --- Auth Routes ---
-@app.get("/api/auth/login")
-async def login(request: Request):
-    # Determine the correct scheme for production (Render)
-    proto = request.headers.get("x-forwarded-proto", "http")
-    redirect_uri = request.url_for("auth_callback")
-    
-    # Force the scheme to match the external protocol (important for Render/Vercel)
-    if proto == "https":
-        redirect_uri = str(redirect_uri).replace("http://", "https://")
-    else:
-        # Fallback for manual check if header is missing
-        if request.url.scheme == "https":
-            redirect_uri = str(redirect_uri).replace("http://", "https://")
-            
-    return await oauth.google.authorize_redirect(request, redirect_uri)
+@app.post("/api/auth/register")
+async def register(
+    name: str = Form(...),
+    email: str = Form(...),
+    password: str = Form(...),
+    db=Depends(get_db)
+):
+    # Check if user already exists
+    existing_user = db.query(User).filter(User.email == email).first()
+    if existing_user:
+        if existing_user.is_verified:
+            raise HTTPException(status_code=400, detail="Email already registered")
+        db.delete(existing_user) # Cleanup unverified
+        db.commit()
 
-@app.get("/api/auth/callback")
-async def auth_callback(request: Request):
-    try:
-        token = await oauth.google.authorize_access_token(request)
-        user = token.get("userinfo")
-        if not user:
-            user = await oauth.google.parse_id_token(request, token)
-            
-        request.session["user"] = {
-            "name": user.get("name"),
-            "email": user.get("email"),
-            "picture": user.get("picture")
-        }
-        # Use 302 (Found) instead of 307 for cleaner browser redirection
-        return RedirectResponse(url=f"{FRONTEND_URL}/auth-success", status_code=302)
-    except Exception as e:
-        print(f"Auth error: {str(e)}")
-        # Redirect to home with error since /login doesn't exist
-        return RedirectResponse(url=f"{FRONTEND_URL}/?error=auth_failed", status_code=302)
+    otp = str(random.randint(100000, 999999))
+    expiry = datetime.now(timezone.utc) + timedelta(minutes=10)
+    
+    new_user = User(
+        name=name,
+        email=email,
+        hashed_password=get_password_hash(password),
+        otp=otp,
+        otp_expiry=expiry,
+        is_verified=False
+    )
+    
+    db.add(new_user)
+    db.commit()
+    
+    if send_otp_email(email, otp, name):
+        return {"message": "OTP sent to your email"}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to send OTP email")
+
+@app.post("/api/auth/verify")
+async def verify_otp(
+    email: str = Form(...),
+    otp: str = Form(...),
+    db=Depends(get_db)
+):
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if user.otp != otp:
+        raise HTTPException(status_code=400, detail="Invalid OTP")
+    
+    if datetime.now(timezone.utc) > user.otp_expiry.replace(tzinfo=timezone.utc):
+        raise HTTPException(status_code=400, detail="OTP expired")
+    
+    user.is_verified = True
+    user.otp = None
+    user.otp_expiry = None
+    db.commit()
+    
+    return {"message": "Email verified successfully. You can now login."}
+
+@app.post("/api/auth/login")
+async def login(
+    request: Request,
+    email: str = Form(...),
+    password: str = Form(...),
+    db=Depends(get_db)
+):
+    user = db.query(User).filter(User.email == email).first()
+    if not user or not user.is_verified:
+         raise HTTPException(status_code=401, detail="Invalid credentials or email not verified")
+    
+    if not verify_password(password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    request.session["user"] = {
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "picture": None # No picture for regular login yet
+    }
+    return {"message": "Login successful", "user": request.session["user"]}
 
 @app.get("/api/auth/me")
 async def get_me(request: Request):

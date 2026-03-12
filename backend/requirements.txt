@@ -16,5 +16,9 @@ authlib
 httpx
 itsdangerous
 
+# Password hashing
+passlib[bcrypt]
+bcrypt
+
 # Environment variables
 python-dotenv

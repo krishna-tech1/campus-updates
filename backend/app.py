@@ -14,9 +14,8 @@ from dotenv import load_dotenv
 from database import engine, SessionLocal
 from models import Base, Post, User
 from email_service import send_otp_email
-from passlib.context import CryptContext
+import bcrypt
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 load_dotenv()
 
 # Initialize Database
@@ -34,7 +33,7 @@ def create_admin_user():
             admin = User(
                 name="System Admin",
                 email=admin_email,
-                hashed_password=pwd_context.hash(admin_password),
+                hashed_password=get_password_hash(admin_password),
                 is_verified=True,
                 role="admin"
             )
@@ -86,10 +85,19 @@ app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 # Password Utilities
 def get_password_hash(password):
-    return pwd_context.hash(password)
+    pwd_bytes = password.encode('utf-8')
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(pwd_bytes, salt)
+    return hashed.decode('utf-8')
 
 def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        return bcrypt.checkpw(
+            plain_password.encode('utf-8'),
+            hashed_password.encode('utf-8')
+        )
+    except Exception:
+        return False
 
 # Dependency to get DB session
 def get_db():

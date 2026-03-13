@@ -18,6 +18,22 @@ import bcrypt
 
 load_dotenv()
 
+# Password Utilities
+def get_password_hash(password):
+    pwd_bytes = password.encode('utf-8')
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(pwd_bytes, salt)
+    return hashed.decode('utf-8')
+
+def verify_password(plain_password, hashed_password):
+    try:
+        return bcrypt.checkpw(
+            plain_password.encode('utf-8'),
+            hashed_password.encode('utf-8')
+        )
+    except Exception:
+        return False
+
 # Initialize Database
 Base.metadata.create_all(bind=engine)
 
@@ -82,22 +98,6 @@ app.add_middleware(
 UPLOAD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
-
-# Password Utilities
-def get_password_hash(password):
-    pwd_bytes = password.encode('utf-8')
-    salt = bcrypt.gensalt()
-    hashed = bcrypt.hashpw(pwd_bytes, salt)
-    return hashed.decode('utf-8')
-
-def verify_password(plain_password, hashed_password):
-    try:
-        return bcrypt.checkpw(
-            plain_password.encode('utf-8'),
-            hashed_password.encode('utf-8')
-        )
-    except Exception:
-        return False
 
 # Dependency to get DB session
 def get_db():

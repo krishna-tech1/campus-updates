@@ -4,8 +4,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-BREVO_API_KEY = os.getenv("BREVO_API_KEY")
-MAIL_FROM = os.getenv("MAIL_FROM", "no-reply@campus-updates.com")
+BREVO_API_KEY = os.getenv("BREVO_API_KEY") or os.getenv("MAIL_PASSWORD")
+if BREVO_API_KEY:
+    BREVO_API_KEY = BREVO_API_KEY.strip('\'"')
+
+MAIL_FROM = os.getenv("MAIL_FROM", "24bca31acas@gmail.com")
 
 def send_otp_email(recipient_email, otp, recipient_name="User"):
     if not BREVO_API_KEY:

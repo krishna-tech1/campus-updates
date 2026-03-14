@@ -61,7 +61,12 @@ def create_admin_user():
 
 create_admin_user()
 
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
+
 app = FastAPI(title="Campus Updates API")
+
+# Trust reverse proxy headers like X-Forwarded-Proto so SessionMiddleware knows it's HTTPS
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
 # Configuration
 SECRET_KEY = os.getenv("SECRET_KEY", "your-super-secret-key")
